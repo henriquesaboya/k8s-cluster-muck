@@ -1,0 +1,5 @@
+{
+  "shared": true,
+  "owner": "storage-demo",
+  "retentionDays": 30
+}

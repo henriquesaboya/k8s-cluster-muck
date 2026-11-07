@@ -87,3 +87,7 @@ Expect `green` with 4 nodes. Yellow or red appears while a node restarts.
 - Elasticsearch security is off and Redis has no password. Fine inside a private cluster for a first pass, not for real data.
 - Redis, RabbitMQ and SQL Server are single instances on local-path volumes. A lost VM means lost data without backups.
 - Elasticsearch needs an index lifecycle policy, or the volumes fill up.
+
+## Learning examples
+
+`examples/shared-storage/` compares a hostPath folder with an NFS share, using mock files and pods on different VMs. It is not part of the main `kustomization.yaml`; apply it on its own.

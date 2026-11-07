@@ -1,0 +1,2 @@
+hello from the shared folder
+if you can read this, the volume is mounted

@@ -1,0 +1,15 @@
+# Shared by both demos. Turns the mock files in this folder into a ConfigMap
+# that an init container copies into the shared volume.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+
+configMapGenerator:
+  - name: mock-files
+    namespace: storage-demo
+    files:
+      - hello.txt
+      - report-001.csv
+      - settings.json
