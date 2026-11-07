@@ -1,0 +1,62 @@
+# Standalone APM Server. The least-tested piece of the set: if the pod crash-loops, read its logs first.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apm-server-config
+  namespace: observability
+data:
+  apm-server.yml: |
+    apm-server:
+      host: "0.0.0.0:8200"
+    output.elasticsearch:
+      hosts: ["http://elasticsearch.observability:9200"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apm-server
+  namespace: observability
+spec:
+  selector:
+    app: apm-server
+  ports:
+    - { name: http, port: 8200, targetPort: 8200 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apm-server
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apm-server
+  template:
+    metadata:
+      labels:
+        app: apm-server
+    spec:
+      containers:
+        - name: apm-server
+          image: docker.elastic.co/apm/apm-server:9.5.6
+          args: ["-e", "--strict.perms=false"]
+          ports:
+            - { name: http, containerPort: 8200 }
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { memory: 512Mi }
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8200
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /usr/share/apm-server/apm-server.yml
+              subPath: apm-server.yml
+      volumes:
+        - name: config
+          configMap:
+            name: apm-server-config

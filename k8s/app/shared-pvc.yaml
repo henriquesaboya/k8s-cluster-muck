@@ -1,0 +1,13 @@
+# Shared ReadWriteMany volume for the API and the workers.
+# Needs the NFS provisioner (storage class nfs-client). See README.md.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: shared-files
+  namespace: app
+spec:
+  accessModes: [ReadWriteMany]
+  storageClassName: nfs-client
+  resources:
+    requests:
+      storage: 20Gi

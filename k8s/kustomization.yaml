@@ -1,0 +1,50 @@
+# The all-in-one file: lists every component, holds the app image tags and
+# generates the ConfigMap and Secrets. Apply everything with:  kubectl apply -k k8s/
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespaces.yaml
+  - data/sqlserver.yaml
+  - data/redis.yaml
+  - data/rabbitmq.yaml
+  - observability/elasticsearch.yaml
+  - observability/kibana.yaml
+  - observability/apm-server.yaml
+  - observability/filebeat.yaml
+  - observability/ingress.yaml
+  - app/shared-pvc.yaml
+  - app/api.yaml
+  - app/worker.yaml
+  - app/ingress.yaml
+
+# To deploy a new version, change newTag and apply again.
+images:
+  - name: registry.example.com/api
+    newTag: "1.0.0"
+  - name: registry.example.com/worker
+    newTag: "1.0.0"
+
+# Real secret values live in secrets/*.env, which git ignores.
+# Copy each secrets/*.env.example to secrets/*.env and fill it in.
+secretGenerator:
+  - name: mssql-secret
+    namespace: data
+    envs: [secrets/mssql.env]
+  - name: rabbitmq-secret
+    namespace: data
+    envs: [secrets/rabbitmq.env]
+  - name: app-secrets
+    namespace: app
+    envs: [secrets/app.env]
+
+configMapGenerator:
+  - name: app-config
+    namespace: app
+    literals:
+      - ASPNETCORE_URLS=http://+:8080
+      - REDIS_HOST=redis.data
+      - RABBITMQ_HOST=rabbitmq.data
+      - ELASTIC_URL=http://elasticsearch.observability:9200
+      - APM_SERVER_URL=http://apm-server.observability:8200
+      - SHARED_PATH=/data/shared

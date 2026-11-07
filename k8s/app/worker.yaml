@@ -1,0 +1,39 @@
+# Three workers, no Service (nothing calls them). Placeholder image: replace with your real one.
+# The image tag is set in kustomization.yaml (images:).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: app
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: registry.example.com/worker
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: app-secrets
+          resources:
+            requests: { cpu: 250m, memory: 256Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: shared, mountPath: /data/shared }
+      volumes:
+        - name: shared
+          persistentVolumeClaim:
+            claimName: shared-files
